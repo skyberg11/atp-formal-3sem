@@ -3,6 +3,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <set>
 #include <sstream>
@@ -36,9 +37,6 @@ class AutomatonT {
   std::set<std::string>& GetSigma() const { return m_sigma_; }
 
   AutomatonT<kDeterministic>& operator=(const AutomatonT<kNondeterministic>&) =
-      delete;
-
-  AutomatonT<kComplete>& operator=(const AutomatonT<kNondeterministic>&) =
       delete;
 
   AutomatonT<kComplete>& operator=(const AutomatonT<kDeterministic>&) = delete;
@@ -154,6 +152,60 @@ class AutomatonTransform {
     return eps;
   }
 
+  void ExpandAccDFS(size_t cur, std::unordered_set<size_t>& visited,
+                    AutomatonT<kNondeterministic>& source) {
+    visited.insert(cur);
+    for (auto it : source.m_nodes_[cur].go) {
+      for (auto it1 : it.second) {
+        if (source.m_nodes_[it1].type == kTerminal) {
+          source.m_nodes_[cur].type = kTerminal;
+        }
+        if (visited.find(it1) != visited.end()) {
+          ExpandAccDFS(it1, visited, source);
+        }
+      }
+    }
+  }
+
+  void DestroyEPSDFS(size_t cur, std::unordered_set<size_t>& visited,
+                     AutomatonT<kNondeterministic>& source) {
+    visited.insert(cur);
+    for (auto it : source.m_nodes_[cur].go) {
+      for (auto it1 : it.second) {
+        if (visited.find(it1) != visited.end()) {
+          DestroyEPSDFS(it1, visited, source);
+        }
+      }
+    }
+    if (source.m_nodes_[cur].go.find("#") != source.m_nodes_[cur].go.end())
+      source.m_nodes_[cur].go["#"].clear();
+  }
+
+  std::unordered_map<std::string, std::unordered_set<size_t>> ExpandEdgesDFS(
+      size_t cur, std::unordered_set<size_t>& visited,
+      AutomatonT<kNondeterministic>& source) {
+    visited.insert(cur);
+    std::unordered_map<std::string, std::unordered_set<size_t>> complement;
+    for (auto it : source.m_nodes_[cur].go) {
+      for (auto it1 : it.second) {
+        if (visited.find(it1) != visited.end()) {
+          if (it.first == "#") {
+            complement = ExpandEdgesDFS(it1, visited, source);
+            complement.insert(complement.begin(), complement.end());
+          } else {
+            ExpandEdgesDFS(it1, visited, source);
+          }
+        } else {
+          if (it.first == "#") {
+            complement = source.m_nodes_[it1].go;
+            complement.insert(complement.begin(), complement.end());
+          }
+        }
+      }
+    }
+    return source.m_nodes_[cur].go;
+  }
+
  public:
   AutomatonT<kNondeterministic> Make01Symbols(
       const AutomatonT<kNondeterministic>& source) {
@@ -176,6 +228,73 @@ class AutomatonTransform {
     size_t cur = closure.m_start_node_id_;
     HelperClosureDFS(cur, visited, closure);
     return closure;
+  }
+
+  void ExpandAcceptables(AutomatonT<kNondeterministic>& source) {
+    std::unordered_set<size_t> visited;
+    size_t cur_index = source.m_start_node_id_;
+
+    ExpandAccDFS(cur_index, visited, source);
+  }
+
+  void ExpandEdges(AutomatonT<kNondeterministic>& source) {
+    std::unordered_set<size_t> visited;
+    size_t cur_index = source.m_start_node_id_;
+
+    ExpandEdgesDFS(cur_index, visited, source);
+  }
+
+  void DestroyEPS(AutomatonT<kNondeterministic>& source) {
+    std::unordered_set<size_t> visited;
+    size_t cur_index = source.m_start_node_id_;
+
+    DestroyEPSDFS(cur_index, visited, source);
+  }
+
+  AutomatonT<kComplete> Thompson(AutomatonT<kNondeterministic>& source) {
+    std::map<std::unordered_set<size_t>, size_t> mp;
+    std::queue<std::unordered_set<size_t>> q;
+    AutomatonT<kComplete> ans(source.GetSigma());
+    size_t cur = source.m_start_node_id_;
+    mp.insert({{cur}, ans.CreateNode()});
+    q.push({cur});
+    ans.SetStartNode(0);
+
+    size_t dummy = ans.CreateNode();
+    for (auto letter : source.m_sigma_) {
+      ans.AddEdge(dummy, dummy, letter);
+    }
+
+    while (!q.empty()) {
+      std::unordered_set<size_t> cur = q.back();
+      q.pop();
+      for (auto letter : source.m_sigma_) {
+        std::unordered_set<size_t> temp;
+        bool isTerm = false;
+        for (auto it : cur) {
+          if (source.m_nodes_[it].type == kTerminal) {
+            isTerm = true;
+          }
+          if (source.m_nodes_[it].go.find(letter) !=
+              source.m_nodes_[it].go.end())
+            temp.insert(source.m_nodes_[it].go[letter].begin(),
+                        source.m_nodes_[it].go[letter].end());
+        }
+        if (temp.empty()) {
+          ans.AddEdge(mp[cur], dummy, letter);
+          continue;
+        }
+        if (mp.find(temp) == mp.end()) {
+          mp.insert({temp, ans.CreateNode()});
+          q.push(temp);
+        }
+        if (isTerm) {
+          ans.SetTerminalNode(mp[temp]);
+        }
+        ans.AddEdge(mp[cur], mp[temp], letter);
+      }
+    }
+    return ans;
   }
 };
 

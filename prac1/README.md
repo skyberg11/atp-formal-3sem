@@ -5,8 +5,8 @@
 virtual AutomatonT<kNondeterministic> StreamBuildAutomaton(std::fstream& in)
 ```
 возвращает НКА, который прочтет из fstream по след. правилам:
-
-```automaton ::= header "--BEGIN--" body "--END--"
+```
+automaton ::= header "--BEGIN--" body "--END--"
 
 header ::= alphabet header-start header-acceptance
 alphabet ::= "Sigma:" STRARRAY
@@ -50,7 +50,7 @@ State: 4
 ```bash
 mkdir build
 cd build
-cmake .
+cmake ..
 make
 ```
 Бинарник тестов появиться в папке bin. Далее с папки build/
@@ -61,6 +61,6 @@ make
 ```bash
 gcov test.cpp.gcno
 lcov --capture --directory . --output-file gtest_coverage.info
-genhtml gtest_coverage.info --output-directory CODE_COVERAGE
+genhtml gtest_coverage.info --output-directory ../../../CODE_COVERAGE
 ```
-Результаты в /build/tests/CMakeFiles/test.dir/CODE_COVERAGE/index.html
+Результаты в /build/CODE_COVERAGE/index.html

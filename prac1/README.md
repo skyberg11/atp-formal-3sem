@@ -1,6 +1,8 @@
 Библиотека, которая может НКА переводить в ДКА и МПДКА по известных алгоритмам. 
 Чтобы создать НКА, нужно подать на вход файл с определенной грамматикой. Функция с сигнатурой
-«`C++ virtual AutomatonT<kNondeterministic> StreamBuildAutomaton(std::fstream& in)«`
+```C++ 
+virtual AutomatonT<kNondeterministic> StreamBuildAutomaton(std::fstream& in)
+```
 возвращает НКА, который прочтет из fstream по след. правилам:
 
 ```automaton ::= header "--BEGIN--" body "--END--"

@@ -1,3 +1,4 @@
+## Обзор
 Библиотека, которая может НКА переводить в ДКА и МПДКА по известных алгоритмам. 
 Чтобы создать НКА, нужно подать на вход файл с определенной грамматикой. Функция с сигнатурой
 ```C++ 
@@ -45,3 +46,21 @@ State: 4
 Есть возможность получения множества слов, которые читает автомат, до некоторой длины. 
 Также присутствуют тесты. Реализованы промежуточные преобразования автоматов.
 
+## Сборка
+```bash
+mkdir build
+cd build
+cmake .
+make
+```
+Бинарник тестов появиться в папке bin. Далее с папки build/
+```bash
+./../bin/test
+```
+Покрытие тестов. В /build/tests/CMakeFiles/test.dir
+```bash
+gcov test.cpp.gcno
+lcov --capture --directory . --output-file gtest_coverage.info
+genhtml gtest_coverage.info --output-directory CODE_COVERAGE
+```
+Результаты в /build/tests/CMakeFiles/test.dir/CODE_COVERAGE/index.html

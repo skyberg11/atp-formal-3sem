@@ -54,7 +54,7 @@ TEST(TransformTests, DFA) {
   transformer->ExpandAcceptables(source);
   transformer->ExpandEdges(source);
   transformer->DestroyEPS(source);
-  AutomatonT<kDeterministic> s = transformer->Thompson(source);
+  AutomatonT<kDeterministic> s = transformer->GetDFAThompson(source);
   s.SaveFA(TESTDIR + std::string("/out.txt"));
   ASSERT_EQ(IsSameFiles(TESTDIR + std::string("/out.txt"),
                         TESTDIR + std::string("/expectedDFA.txt")),

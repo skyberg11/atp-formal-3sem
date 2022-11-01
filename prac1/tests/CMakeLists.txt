@@ -1,6 +1,9 @@
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+set(TESTDIR "\"${CMAKE_SOURCE_DIR}/tests/testcases\"")
+add_definitions( -DTESTDIR=${TESTDIR} )
+
 add_executable(test test.cpp)
 set(CMAKE_CXX_FLAGS --coverage)
 target_link_libraries(test ${GTEST_LIBRARIES} pthread)

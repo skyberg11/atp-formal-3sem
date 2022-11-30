@@ -34,63 +34,63 @@ class NodeEarley:
 
 
 class EarleyParser(GrammarParser):
-    def __scan(self, D, j: int, word: List[Symbol]):
+    def __scan(self, nodes_set, j: int, word: List[Symbol]):
         if j == 0:
-            return D
-        for node in D[j - 1]:
+            return nodes_set
+        for node in nodes_set[j - 1]:
             if node.can_scan(word[j - 1]):
                 new_node = copy.deepcopy(node)
                 new_node.push_pivot()
-                D[j].add(new_node)
-        return D
+                nodes_set[j].add(new_node)
+        return nodes_set
 
-    def __complete(self, D, j: int):
+    def __complete(self, nodes_set, j: int):
         complement = set()
-        for node in D[j]:
+        for node in nodes_set[j]:
             if node.can_complete():
-                for parent_node in D[node.index]:
+                for parent_node in nodes_set[node.index]:
                     if parent_node.can_scan(node.rule.left[0]):
                         new_node = copy.deepcopy(parent_node)
                         new_node.push_pivot()
                         complement.add(new_node)
-        D[j].update(complement)
-        return D
+        nodes_set[j].update(complement)
+        return nodes_set
 
-    def __predict(self, D, j: int, gram: Grammar):
+    def __predict(self, nodes_set, j: int, cf_grammar: Grammar):
         complement = set()
-        for rule in D[j]:
+        for rule in nodes_set[j]:
             if rule.get_scan_state() == SymbolType.NONTERM:
-                for gram_rule in gram.rules:
-                    if rule.can_scan(gram_rule.left[0]):
-                        new_node = NodeEarley(gram_rule, j)
+                for cf_grammar_rule in cf_grammar.rules:
+                    if rule.can_scan(cf_grammar_rule.left[0]):
+                        new_node = NodeEarley(cf_grammar_rule, j)
                         complement.add(new_node)
-        D[j].update(complement)
-        return D
+        nodes_set[j].update(complement)
+        return nodes_set
 
-    def does_generate(self, gram: Grammar, word: List[Symbol]) -> bool:
-        if gram.grammar_type() != GrammarType.CONTEXTFREE:
+    def does_generate(self, cf_grammar: Grammar, word: List[Symbol]) -> bool:
+        if cf_grammar.grammar_type() != GrammarType.CONTEXTFREE:
             raise exceptions.BadGrammarFormError
 
-        D = [set() for _ in range(len(word) + 1)]
+        nodes_set = [set() for _ in range(len(word) + 1)]
 
         start_rule = NodeEarley(ProductionRule([Symbol('X')],
                                                [Symbol('S')]), 0)
 
-        D[0].add(start_rule)
+        nodes_set[0].add(start_rule)
 
         for j in range(len(word) + 1):
-            D = self.__scan(D, j, word)
-            szl = len(D[j])
+            nodes_set = self.__scan(nodes_set, j, word)
+            szl = len(nodes_set[j])
             while True:
-                D = self.__complete(D, j)
-                D = self.__predict(D, j, gram)
-                if szl == len(D[j]):
+                nodes_set = self.__complete(nodes_set, j)
+                nodes_set = self.__predict(nodes_set, j, cf_grammar)
+                if szl == len(nodes_set[j]):
                     break
                 else:
-                    szl = len(D[j])
+                    szl = len(nodes_set[j])
 
         end_node = NodeEarley(ProductionRule([Symbol('X')],
                                              [Symbol('S')]), 0)
         end_node.push_pivot()
 
-        return end_node in D[len(word)]
+        return end_node in nodes_set[len(word)]

@@ -96,7 +96,7 @@ class ProductionRule:
 class Grammar:
     def __init__(self, rules: List[ProductionRule]):
         self.rules = rules
-        self.__is_Chomsky = False
+        self.__is_chomsky = False
         rules_types_set = set()
         for rule in rules:
             rules_types_set.add(rule.get_type())
@@ -110,8 +110,8 @@ class Grammar:
     def grammar_type(self) -> bool:
         return self.type
 
-    def is_in_Chomsky(self) -> bool:
-        if self.__is_Chomsky == True:
+    def is_in_chomsky(self) -> bool:
+        if self.__is_chomsky == True:
             return True
         if self.type != GrammarType.CONTEXTFREE:
             return False
@@ -132,7 +132,7 @@ class Grammar:
                         return False
                 else:
                     return False
-        self.__is_Chomsky = has_start_eps
+        self.__is_chomsky = has_start_eps
         return has_start_eps
 
     def has_rule(self, rule: ProductionRule) -> bool:

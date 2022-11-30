@@ -36,6 +36,13 @@ def test_production_rule():
     imposter_yes_rule = another_sens_rule
     imposter_yet_yesr = copy.deepcopy(imposter_yes_rule)
 
+    s = set()
+    s.add(upper)
+    s.add(context_free_rule)
+
+    assert upper in s
+    assert context_free_rule in s
+    assert not imposter_yes_rule in s
     assert repr(imposter_yet_yesr) == 'Aa -> aaa'
     assert context_free_rule.get_type() == ProductionRuleType.CONTEXTFREE
     assert context_sens_rule.get_type() == ProductionRuleType.CONTEXTSENSIVITE
@@ -69,8 +76,10 @@ def test_grammar():
 
     assert gram_Chomsky_1.is_in_Chomsky()
     assert gram_Chomsky_2.is_in_Chomsky()
+    assert gram_Chomsky_2.is_in_Chomsky()
     assert not gram_1.is_in_Chomsky()
     assert not gram_2.is_in_Chomsky()
+    assert not generative_gram.is_in_Chomsky()
 
     assert gram_1.has_rule(rule)
     assert gram_1.has_rule(copy_rule)

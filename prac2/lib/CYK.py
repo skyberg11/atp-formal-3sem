@@ -7,8 +7,8 @@ class CYKParser(GrammarParser):
             for rule in gram.rules:
                 if len(rule.right) == 1:
                     if rule.right[0] == symbol:
-                        A = ord(rule.left[0].word[0]) - ord('A')
-                        dynamic[A][index][index + 1] = True
+                        letter = ord(rule.left[0].word[0]) - ord('A')
+                        dynamic[letter][index][index + 1] = True
         return dynamic
 
     def __process_words(self, dynamic, gram: Grammar, word_length: int, word: List[Symbol]):
@@ -17,14 +17,14 @@ class CYKParser(GrammarParser):
             for rule in gram.rules:
                 if len(rule.right) == 2:
                     for mid_position in range(start + 1, end):
-                        A = ord(rule.left[0].word[0]) - ord('A')
-                        B = ord(rule.right[0].word[0]) - ord('A')
-                        C = ord(rule.right[1].word[0]) - ord('A')
-                        dynamic[A][start][end] |= dynamic[B][start][mid_position] & dynamic[C][mid_position][end]
+                        full = ord(rule.left[0].word[0]) - ord('A')
+                        left = ord(rule.right[0].word[0]) - ord('A')
+                        right = ord(rule.right[1].word[0]) - ord('A')
+                        dynamic[full][start][end] |= dynamic[left][start][mid_position] & dynamic[right][mid_position][end]
         return dynamic
 
     def does_generate(self, gram: Grammar, word: List[Symbol]) -> bool:
-        if gram.is_in_Chomsky() == False:
+        if gram.is_in_chomsky() == False:
             raise exceptions.BadGrammarFormError
         for sym in word:
             if sym.type == SymbolType.NONTERM:

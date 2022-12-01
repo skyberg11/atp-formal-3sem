@@ -1,2 +1,10 @@
 */build/
-build/
+*/lib/__pycache__/
+*/bin/
+*/venv/
+*/__pycache__/
+*/__pycache__/
+*/.pytest_cache/
+*/.coverage
+*/tests/.pytest_cache/
+*/tests/__pycache__/

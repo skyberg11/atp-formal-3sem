@@ -1,20 +1,22 @@
 from lib.grammar import *
 from lib import exceptions
 import copy
+import pytest
 
 
+@pytest.mark.correctness_grammar
 def test_symbol():
     upper = Symbol('T')
     lower = Symbol('i')
     start = Symbol('S')
 
     try:
-        bad = Symbol('!')
+        Symbol('!')
     except exceptions.BadLetterError:
         pass
 
     try:
-        bad = Symbol('TK')
+        Symbol('TK')
     except exceptions.SymbolLenError:
         pass
 
@@ -24,6 +26,7 @@ def test_symbol():
     assert start.is_nonterm()
 
 
+@pytest.mark.correctness_grammar
 def test_production_rule():
     upper = Symbol('A')
     lower = Symbol('a')
@@ -52,6 +55,7 @@ def test_production_rule():
     assert context_sens_rule == imposter_yet_yesr
 
 
+@pytest.mark.correctness_grammar
 def test_grammar():
     upper = Symbol('A')
     lower = Symbol('a')

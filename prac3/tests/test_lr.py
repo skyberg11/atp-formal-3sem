@@ -1,67 +1,67 @@
+import pytest
 from lib import grammar
 from lib import lr as LR
+from lib import exceptions
 
 
-# def test_correctness_lr_hard():
-#     """Dyck word ab in Chomsky form grammar"""
+@pytest.mark.correctness_lr_grammar
+def test_grammar_dyck_word():
+    """Dyck word ab in Chomsky form grammar
+        not in lr(0)"""
+    A = grammar.Symbol('S')
+    S = grammar.Symbol('A')
+    a = grammar.Symbol('a')
+    B = grammar.Symbol('B')
+    b = grammar.Symbol('b')
+    C = grammar.Symbol('C')
+    D = grammar.Symbol('D')
+    StartRule = grammar.ProductionRule([A], [])
+    Rule1 = grammar.ProductionRule([A], [S, S])
+    Rule2 = grammar.ProductionRule([A], [C, D])
+    Rule3 = grammar.ProductionRule([A], [C, B])
+    Rule4 = grammar.ProductionRule([S], [S, S])
+    Rule5 = grammar.ProductionRule([S], [C, D])
+    Rule6 = grammar.ProductionRule([S], [C, B])
+    Rule7 = grammar.ProductionRule([B], [S, D])
+    Rule8 = grammar.ProductionRule([C], [a])
+    Rule9 = grammar.ProductionRule([D], [b])
 
-#     A = grammar.Symbol('S')
-#     S = grammar.Symbol('A')
-#     a = grammar.Symbol('a')
-#     B = grammar.Symbol('B')
-#     b = grammar.Symbol('b')
-#     C = grammar.Symbol('C')
-#     D = grammar.Symbol('D')
-#     StartRule = grammar.ProductionRule([A], [])
-#     Rule1 = grammar.ProductionRule([A], [S, S])
-#     Rule2 = grammar.ProductionRule([A], [C, D])
-#     Rule3 = grammar.ProductionRule([A], [C, B])
-#     Rule4 = grammar.ProductionRule([S], [S, S])
-#     Rule5 = grammar.ProductionRule([S], [C, D])
-#     Rule6 = grammar.ProductionRule([S], [C, B])
-#     Rule7 = grammar.ProductionRule([B], [S, D])
-#     Rule8 = grammar.ProductionRule([C], [a])
-#     Rule9 = grammar.ProductionRule([D], [b])
+    g = grammar.Grammar([StartRule, Rule1, Rule2, Rule3,
+                        Rule4, Rule5, Rule6, Rule7, Rule8, Rule9])
 
-#     g = grammar.Grammar([StartRule, Rule1, Rule2, Rule3,
-#                         Rule4, Rule5, Rule6, Rule7, Rule8, Rule9])
+    try:
+        LR.LR0Parser(g)
+    except exceptions.GrammarErrorLR0:
+        return
 
-#     testcases = [[a, b], [], [a, b, a], [a, b, a, b], [a, a, b, b], [a, a, b, a, b, a], [a, a, b, a, b, b], [b, a], [a], [b],
-#                  [a, b, a, b, a, a, b, b, a, a, b, a, b, b], [b, b, a], [a, a, b]]
-#     answers = [True, True, False, True, True, False,
-#                True, False, False, False, True, False, False]
-
-#     parser = LR.LRParser(g)
-
-#     for test, answer in zip(testcases, answers):
-#         if parser.does_generate(test) != answer:
-#             assert False
+    assert False
 
 
-# def test_correctness_lr_easy():
-#     """Some context-free grammar from seminar"""
-#     S = grammar.Symbol('S')
-#     a = grammar.Symbol('a')
-#     F = grammar.Symbol('F')
-#     b = grammar.Symbol('b')
-#     StartRule = grammar.ProductionRule([S], [a, F, b, F])
-#     Rule1 = grammar.ProductionRule([F], [a, F, b])
-#     Rule2 = grammar.ProductionRule([F], [])
+@pytest.mark.correctness_lr_grammar
+def test_correctness_random_cf():
+    """Some context-free grammar from seminar
+        not in lr(0)"""
+    S = grammar.Symbol('S')
+    a = grammar.Symbol('a')
+    F = grammar.Symbol('F')
+    b = grammar.Symbol('b')
+    StartRule = grammar.ProductionRule([S], [a, F, b, F])
+    Rule1 = grammar.ProductionRule([F], [a, F, b])
+    Rule2 = grammar.ProductionRule([F], [])
 
-#     g = grammar.Grammar([StartRule, Rule1, Rule2])
+    g = grammar.Grammar([StartRule, Rule1, Rule2])
 
-#     testcases = [[a, a, b, b], [a, b], [a, a, b, b, a, b],
-#                  [a, a, b, b, b], [b], [], [a, b, a, b], [a, b, a, b, a, b]]
-#     answers = [True, True, True, False, False, False, True, False]
+    try:
+        LR.LR0Parser(g)
+    except exceptions.GrammarErrorLR0:
+        return
 
-#     parser = LR.LRParser(g)
+    assert False
 
-# for test, answer in zip(testcases, answers):
-#     if parser.does_generate(test) != answer:
-#         assert False
 
-def test_correctness_lr_easy():
-    """Some context-free grammar from seminar"""
+@pytest.mark.correctness_lr_parser
+def test_left_recursive():
+    """Some left-recursive grammar"""
     S = grammar.Symbol('S')
     T = grammar.Symbol('T')
     p = grammar.Symbol('+')
@@ -75,12 +75,34 @@ def test_correctness_lr_easy():
 
     g = grammar.Grammar([StartRule, Rule1, Rule2, Rule3])
 
-    testcases = [[l, n, p, n, r, p, n], [n, p, p, n]]
-    answers = [True, False]
-    print("OK")
-    parser = LR.LRParser(g)
+    testcases = [[l, n, p, n, r, p, n], [n, p, p, n],
+                 [n, p, n], [n], [p], [l, l, n, p, n, r, p, n, r, p, n]]
+    # |(n + n) + n| n + + n| n + n| n| +| ((n + n) + n) + n|
+    answers = [True, False, True, True, False, True]
+
+    parser = LR.LR0Parser(g)
 
     for test, answer in zip(testcases, answers):
-        print("NEXT ITERATIO:")
-        if parser.does_generate(test) != answer:
-            assert False
+        assert parser.does_generate(test) == answer
+
+
+@pytest.mark.correctness_lr_parser
+def test_cf_grammar():
+    """Some CF grammar"""
+    S = grammar.Symbol('S')
+    A = grammar.Symbol('A')
+    a = grammar.Symbol('a')
+    b = grammar.Symbol('b')
+    StartRule = grammar.ProductionRule([S], [A])
+    Rule1 = grammar.ProductionRule([A], [a, A, A])
+    Rule2 = grammar.ProductionRule([A], [b])
+
+    g = grammar.Grammar([StartRule, Rule1, Rule2])
+
+    testcases = [[a, b, b], [b], [a], [a, a, b], [a, a, a, b, b, b, b]]
+    answers = [True, True, False, False, True]
+
+    parser = LR.LR0Parser(g)
+
+    for test, answer in zip(testcases, answers):
+        assert parser.does_generate(test) == answer

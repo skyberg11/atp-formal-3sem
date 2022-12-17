@@ -1,6 +1,0 @@
-A
-A->SS|CD|CB
-S->SS|CD|CB
-B->SD
-C->a
-D->b

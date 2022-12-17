@@ -29,8 +29,6 @@ class Symbol:
             self.type = SymbolType.NONTERM
         else:
             self.type = SymbolType.TERM
-        # else:
-            #raise exceptions.BadLetterError
         self.word = word
 
     def is_term(self) -> bool:
